@@ -51,16 +51,6 @@ DOC_HEAD = r'''
 \pagestyle{empty}
 '''
 
-DOC_HEAD_LUALATEX = r'''
-\documentclass[12pt]{article}
-\usepackage[fontspec}
-\usepackage{unicode-math}
-\usepackage{amsmath}
-\usepackage{amsthm}
-\usepackage{bm}
-\pagestyle{empty}
-'''
-
 DOC_BODY = r'''
 \begin{document}
 %s
@@ -93,11 +83,7 @@ def render_math(self, math):
     may not fail since that indicates a problem in the math source.
     """
     use_preview = self.builder.config.pngmath_use_preview
-    if self.builder.config.pngmath_latex == 'lualatex':
-        latex = DOC_HEAD_LUALATEX
-    else:
-        latex = DOC_HEAD
-    latex += self.builder.config.pngmath_latex_preamble
+    latex = DOC_HEAD + self.builder.config.pngmath_latex_preamble
     latex += (use_preview and DOC_BODY_PREVIEW or DOC_BODY) % math
 
     shasum = "%s.png" % sha1(latex.encode('utf-8')).hexdigest()
