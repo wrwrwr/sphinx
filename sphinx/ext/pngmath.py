@@ -100,7 +100,7 @@ def render_math(self, math):
 
     # if latex or dvipng has failed once, don't bother to try again
     if hasattr(self.builder, '_mathpng_warned_latex') or \
-       hasattr(self.builder, '_mathpng_warned_dvipng'):
+       hasattr(self.builder, '_mathpng_warned_image_conversion'):
         return None, None
 
     # use only one tempdir per build -- the use of a directory is cleaner
@@ -140,28 +140,34 @@ def render_math(self, math):
         raise MathExtError('latex exited with error', stderr, stdout)
 
     ensuredir(path.dirname(outfn))
-    # use some standard dvipng arguments
-    dvipng_args = [self.builder.config.pngmath_dvipng]
-    dvipng_args += ['-o', outfn, '-T', 'tight', '-z9']
-    # add custom ones from config value
-    dvipng_args.extend(self.builder.config.pngmath_dvipng_args)
-    if use_preview:
-        dvipng_args.append('--depth')
-    # last, the input file name
-    dvipng_args.append(path.join(tempdir, 'math.dvi'))
+    if self.builder.config.pngmath_image_converter == 'convert':
+        args = [self.builder.config.pngmath_convert]
+        args.extend(self.builder.config.pngmath_convert_args)
+        args.extend((path.join(tempdir, 'math.pdf'), '-trim', outfn))
+    else:
+        # use some standard dvipng arguments
+        args = [self.builder.config.pngmath_dvipng]
+        args += ['-o', outfn, '-T', 'tight', '-z9']
+        # add custom ones from config value
+        args.extend(self.builder.config.pngmath_dvipng_args)
+        if use_preview:
+            args.append('--depth')
+        # last, the input file name
+        args.append(path.join(tempdir, 'math.dvi'))
     try:
-        p = Popen(dvipng_args, stdout=PIPE, stderr=PIPE)
+        p = Popen(args, stdout=PIPE, stderr=PIPE)
     except OSError as err:
         if err.errno != ENOENT:   # No such file or directory
             raise
-        self.builder.warn('dvipng command %r cannot be run (needed for math '
-                          'display), check the pngmath_dvipng setting' %
-                          self.builder.config.pngmath_dvipng)
-        self.builder._mathpng_warned_dvipng = True
+        self.builder.warn('dvipng/convert command %r cannot be run (needed '
+                          'for math display), check the pngmath_dvipng or '
+                          'the pngmath_convert setting' % args[0])
+        self.builder._mathpng_warned_image_conversion = True
         return None, None
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-        raise MathExtError('dvipng exited with error', stderr, stdout)
+        raise MathExtError('dvipng or convert exited with error',
+                           stderr, stdout)
     depth = None
     if use_preview:
         for line in stdout.splitlines():
@@ -242,11 +248,16 @@ def html_visit_displaymath(self, node):
 
 def setup(app):
     mathbase_setup(app, (html_visit_math, None), (html_visit_displaymath, None))
+    app.add_config_value('pngmath_image_converter', 'dvipng', 'html')
     app.add_config_value('pngmath_dvipng', 'dvipng', 'html')
+    app.add_config_value('pngmath_convert', 'convert', 'html')
     app.add_config_value('pngmath_latex', 'latex', 'html')
     app.add_config_value('pngmath_use_preview', False, 'html')
     app.add_config_value('pngmath_dvipng_args',
                          ['-gamma', '1.5', '-D', '110', '-bg', 'Transparent'],
+                         'html')
+    app.add_config_value('pngmath_convert_args',
+                         [],
                          'html')
     app.add_config_value('pngmath_latex_args', [], 'html')
     app.add_config_value('pngmath_latex_preamble', '', 'html')
