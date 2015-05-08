@@ -42,12 +42,17 @@ class MathExtError(SphinxError):
 
 DOC_HEAD = r'''
 \documentclass[12pt]{article}
-\usepackage[utf8x]{inputenc}
-\usepackage{amsmath}
-\usepackage{amsthm}
-\usepackage{amssymb}
-\usepackage{amsfonts}
-\usepackage{bm}
+\usepackage{amsmath, amsthm, bm, ifluatex, ifxetex}
+\ifluatex
+    \usepackage{fontspec, unicode-math}
+\else
+    \ifxetex
+        \usepackage{fontspec, xltxtra, xunicode}
+    \else
+        \usepackage[utf8x]{inputenc}
+        \usepackage{amsfonts, amssymb}
+    \fi
+\fi
 \pagestyle{empty}
 '''
 
