@@ -44,7 +44,7 @@ DOC_HEAD = r'''
 \documentclass[12pt]{article}
 \usepackage{amsmath, amsthm, bm, ifluatex, ifxetex}
 \ifluatex
-    \usepackage{fontspec, unicode-math}
+    \usepackage{fontspec, unicode-math, lualatex-math}
 \else
     \ifxetex
         \usepackage{fontspec, xltxtra, xunicode}
