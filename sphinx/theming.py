@@ -26,9 +26,6 @@ except ImportError:
 from sphinx import package_dir
 from sphinx.errors import ThemeError
 
-import alabaster
-import sphinx_rtd_theme
-
 NODEFAULT = object()
 THEMECONF = 'theme.conf'
 
@@ -72,12 +69,14 @@ class Theme(object):
     @classmethod
     def load_extra_theme(cls, name):
         if name == 'alabaster':
+            import alabaster  # Separately distributed.
             cls.themes[name] = (os.path.join(alabaster.get_path(), name), None)
             # alabaster theme also requires 'alabaster' extension, it will be loaded at
             # sphinx.******* module.
             return
 
         if name == 'sphinx_rtd_theme':
+            import sphinx_rtd_theme  # Separately distributed.
             cls.themes[name] = (
                 os.path.join(sphinx_rtd_theme.get_html_theme_path(), name), None)
             return
