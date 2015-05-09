@@ -129,7 +129,7 @@ def render_math(self, math):
         except OSError as err:
             if err.errno != ENOENT:   # No such file or directory
                 raise
-            self.builder.warn('LaTeX command %r cannot be run (needed for math '
+            self.builder.warn('command %r cannot be run (needed for math '
                               'display), check the pngmath_latex setting' %
                               self.builder.config.pngmath_latex)
             self.builder._mathpng_warned_latex = True
@@ -137,7 +137,8 @@ def render_math(self, math):
 
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-        raise MathExtError('latex exited with error', stderr, stdout)
+        raise MathExtError('latex processor exited with error'
+                           '\n[tex]\n%s' % latex, stderr, stdout)
 
     ensuredir(path.dirname(outfn))
     if self.builder.config.pngmath_image_converter == 'convert':
